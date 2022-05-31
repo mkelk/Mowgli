@@ -98,6 +98,7 @@ std_msgs::Bool bool_blade_state_msg;
 std_msgs::Bool bool_charging_state_msg;
 nav_msgs::Odometry odom_msg;
 std_msgs::UInt16 left_encoder_val_msg;
+std_msgs::UInt16 right_encoder_val_msg;
 
 
 /*
@@ -111,6 +112,7 @@ ros::Publisher pubChargeingState("charging_state", &bool_charging_state_msg);
 ros::Publisher pubBladeState("blade_state", &bool_blade_state_msg);
 ros::Publisher pubOdom("odom", &odom_msg);
 ros::Publisher pubLeftEncoderVal("left_encoder_val", &left_encoder_val_msg);
+ros::Publisher pubRightEncoderVal("right_encoder_val", &right_encoder_val_msg);
 
 /*
  * SUBSCRIBERS
@@ -369,6 +371,8 @@ extern "C" void broadcast_handler()
 
 		left_encoder_val_msg.data = left_encoder_val;
 		pubLeftEncoderVal.publish(&left_encoder_val_msg);
+		right_encoder_val_msg.data = right_encoder_val;
+		pubRightEncoderVal.publish(&right_encoder_val_msg);
 /*
 		double dx = 0.2;
 		double dtheta = 0.18;
@@ -421,6 +425,8 @@ extern "C" void init_ROS()
 	nh.advertise(pubOdom);
 	nh.advertise(pubBladeState);
 	nh.advertise(pubChargeingState);
+	nh.advertise(pubLeftEncoderVal);
+	nh.advertise(pubRightEncoderVal);
 	// Initialize Subs
 	nh.subscribe(subCommandVelocity);
 	nh.subscribe(subBladeOn);
