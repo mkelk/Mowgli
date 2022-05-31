@@ -20,6 +20,7 @@
 #include "std_msgs/String.h"
 #include "std_msgs/Float32.h"
 #include "std_msgs/Int16.h"
+#include "std_msgs/UInt16.h"
 #include "nav_msgs/Odometry.h"
 #include "nbt.h"
 #include "geometry_msgs/Twist.h"
@@ -96,7 +97,7 @@ std_msgs::Int16 int16_charge_pwm_msg;
 std_msgs::Bool bool_blade_state_msg;
 std_msgs::Bool bool_charging_state_msg;
 nav_msgs::Odometry odom_msg;
-std_msgs::Uint16 left_encoder_val_msg;
+std_msgs::UInt16 left_encoder_val_msg;
 
 
 /*
@@ -367,7 +368,7 @@ extern "C" void broadcast_handler()
 		pubOdom.publish(&odom_msg);
 
 		left_encoder_val_msg.data = left_encoder_val;
-		pubLeftEncoderVal.publish(&left_encoder_val_msg)
+		pubLeftEncoderVal.publish(&left_encoder_val_msg);
 /*
 		double dx = 0.2;
 		double dtheta = 0.18;
