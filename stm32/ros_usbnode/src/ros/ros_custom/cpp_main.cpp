@@ -96,6 +96,8 @@ std_msgs::Int16 int16_charge_pwm_msg;
 std_msgs::Bool bool_blade_state_msg;
 std_msgs::Bool bool_charging_state_msg;
 nav_msgs::Odometry odom_msg;
+std_msgs::Uint16 left_encoder_val_msg;
+
 
 /*
  * PUBLISHERS
@@ -107,6 +109,7 @@ ros::Publisher pubChargePWM("charge_pwm", &int16_charge_pwm_msg);
 ros::Publisher pubChargeingState("charging_state", &bool_charging_state_msg);
 ros::Publisher pubBladeState("blade_state", &bool_blade_state_msg);
 ros::Publisher pubOdom("odom", &odom_msg);
+ros::Publisher pubLeftEncoderVal("left_encoder_val", &left_encoder_val_msg);
 
 /*
  * SUBSCRIBERS
@@ -362,6 +365,9 @@ extern "C" void broadcast_handler()
 		odom_msg.twist.twist.linear.y = 0.0;
 		odom_msg.twist.twist.angular.z = dth;
 		pubOdom.publish(&odom_msg);
+
+		left_encoder_val_msg.data = left_encoder_val;
+		pubLeftEncoderVal.publish(&left_encoder_val_msg)
 /*
 		double dx = 0.2;
 		double dtheta = 0.18;
