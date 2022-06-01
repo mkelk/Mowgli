@@ -90,7 +90,7 @@ double y = 0.0;
 double theta = 1.57;
 */
 
-// std_msgs::String str_msg;
+std_msgs::String str_msg;
 std_msgs::Float32 f32_battery_voltage_msg;
 std_msgs::Float32 f32_charge_voltage_msg;
 std_msgs::Int16 int16_charge_pwm_msg;
@@ -104,7 +104,7 @@ std_msgs::UInt16 right_encoder_val_msg;
 /*
  * PUBLISHERS
  */
-// ros::Publisher chatter("version", &str_msg);
+ros::Publisher chatter("version", &str_msg);
 ros::Publisher pubBatteryVoltage("battery_voltage", &f32_battery_voltage_msg);
 ros::Publisher pubChargeVoltage("charge_voltage", &f32_charge_voltage_msg);
 ros::Publisher pubChargePWM("charge_pwm", &int16_charge_pwm_msg);
@@ -259,6 +259,11 @@ extern "C" void motors_handler()
 	  {	
 		setDriveMotors(left_speed, right_speed, left_dir, right_dir);		
 		setBladeMotor(blade_on_off);		
+
+		char setmotorsok[] = "Motors Set";
+		str_msg.data = setmotorsok;
+		chatter.publish(&str_msg);
+	
 	  }
 }
 
@@ -419,6 +424,7 @@ extern "C" void init_ROS()
 	broadcaster.init(nh);
 
 	// Initialize Pubs
+	nh.advertise(chatter);
 	nh.advertise(pubBatteryVoltage);
 	nh.advertise(pubChargeVoltage);
 	nh.advertise(pubChargePWM);
