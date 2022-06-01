@@ -85,11 +85,12 @@ TIM_HandleTypeDef TIM1_Handle;
  * PANEL UART receive ISR
  */ 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{    
-       
+{   
+    // debug_printf("In HAL_UART_RxCpltCallback\r\n");
 
        if (huart->Instance == MASTER_USART_INSTANCE)
        {
+            // debug_printf("In HAL_UART_RxCpltCallback; uart->Instance == MASTER_USART_INSTANCE\r\n");
          /*
             * MASTER Message handling
             */
@@ -142,6 +143,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
        }
        else if (huart->Instance == DRIVEMOTORS_USART_INSTANCE)
        {
+            //debug_printf("In HAL_UART_RxCpltCallback; uart->Instance == DRIVEMOTORS_USART_INSTANCE\r\n");
          /*
             * DRIVE MOTORS Message handling
             */
@@ -176,6 +178,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
                {                   
                    // message valid, reader must set back STATUS to RX_WAIT
                    drivemotors_rx_STATUS = RX_VALID;
+                   debug_printf("In HAL_UART_RxCpltCallback; drivemotors_rx_STATUS = RX_VALID\r\n");
+
                    //drivemotors_rx_buf_idx = 0;
                }
                else
@@ -183,17 +187,20 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
                    // crc failed, reader must set back STATUS to RX_WAIT
                    drivemotors_rx_STATUS = RX_CRC_ERROR;                   
                    drivemotors_rx_buf_idx = 0;
+                   debug_printf("In HAL_UART_RxCpltCallback; drivemotors_rx_STATUS = RX_CRC_ERROR\r\n");
                }
            }
            else
            {
                drivemotors_rx_STATUS = RX_WAIT;
                drivemotors_rx_buf_idx = 0;               
+               debug_printf("In HAL_UART_RxCpltCallback; rivemotors_rx_STATUS = RX_WAIT\r\n");
            }
            HAL_UART_Receive_IT(&DRIVEMOTORS_USART_Handler, &drivemotors_rcvd_data, 1);   // rearm interrupt               
        }       
        else if(huart->Instance == PANEL_USART_INSTANCE)
        {
+        // debug_printf("In HAL_UART_RxCpltCallback; uart->Instance == PANEL_USART_INSTANCE\r\n");
            PANEL_Handle_Received_Data(panel_rcvd_data);
            HAL_UART_Receive_IT(&PANEL_USART_Handler, &panel_rcvd_data, 1);   // rearm interrupt               
        }
@@ -290,8 +297,10 @@ int main(void)
         motors_handler();    
         panel_handler();
         spinOnce();                       
+        // debug_printf("Checking drivemotors_rx_STATUS\r\n");     
         if (drivemotors_rx_STATUS == RX_VALID)                    // valid frame received from DRIVEMOTORS USART
         {
+            debug_printf("Checking drivemotors_rx_STATUS: drivemotors_rx_STATUS == RX_VALID\r\n");     
             uint8_t direction = drivemotors_rx_buf[5];
 
             // we need to adjust for direction (+/-) !
@@ -314,10 +323,14 @@ int main(void)
                         
             left_encoder_val = (drivemotors_rx_buf[16]<<8)+drivemotors_rx_buf[15];
             right_encoder_val = (drivemotors_rx_buf[14]<<8)+drivemotors_rx_buf[13];            
-            //if (drivemotors_rx_buf[5]>>4)       // stuff is moving
-            //{
-            //  msgPrint(drivemotors_rx_buf, drivemotors_rx_buf_idx);             
-            //}                    
+            if (drivemotors_rx_buf[5]>>4)       // stuff is moving
+            {
+              debug_printf("drivemotors_rx_buf[5]>>4\r\n");    
+              msgPrint(drivemotors_rx_buf, drivemotors_rx_buf_idx);             
+            } else {
+              debug_printf("NOT drivemotors_rx_buf[5]>>4\r\n");    
+              msgPrint(drivemotors_rx_buf, drivemotors_rx_buf_idx);             
+            }                   
             drivemotors_rx_buf_idx = 0;
             drivemotors_rx_STATUS = RX_WAIT;                    // ready for next message            
             //  HAL_GPIO_TogglePin(LED_GPIO_PORT, LED_PIN);         // flash LED             
@@ -1122,7 +1135,8 @@ void setDriveMotors(uint8_t left_speed, uint8_t right_speed, uint8_t left_dir, u
     drivemotors_msg[5] = direction;
     // calc crc
     drivemotors_msg[DRIVEMOTORS_MSG_LEN-1] = crcCalc(drivemotors_msg, DRIVEMOTORS_MSG_LEN-1);
-  // msgPrint(drivemotors_msg, DRIVEMOTORS_MSG_LEN);
+    debug_printf("Writing in setDriveMotors");
+    msgPrint(drivemotors_msg, DRIVEMOTORS_MSG_LEN);
     // transmit
     HAL_UART_Transmit(&DRIVEMOTORS_USART_Handler, drivemotors_msg, DRIVEMOTORS_MSG_LEN, HAL_MAX_DELAY);
 }
