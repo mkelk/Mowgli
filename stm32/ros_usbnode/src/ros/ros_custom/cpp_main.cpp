@@ -104,15 +104,15 @@ std_msgs::UInt16 right_encoder_val_msg;
 /*
  * PUBLISHERS
  */
-ros::Publisher chatter("version", &str_msg);
-ros::Publisher pubBatteryVoltage("battery_voltage", &f32_battery_voltage_msg);
-ros::Publisher pubChargeVoltage("charge_voltage", &f32_charge_voltage_msg);
-ros::Publisher pubChargePWM("charge_pwm", &int16_charge_pwm_msg);
-ros::Publisher pubChargeingState("charging_state", &bool_charging_state_msg);
-ros::Publisher pubBladeState("blade_state", &bool_blade_state_msg);
-ros::Publisher pubOdom("odom", &odom_msg);
-ros::Publisher pubLeftEncoderVal("left_encoder_val", &left_encoder_val_msg);
-ros::Publisher pubRightEncoderVal("right_encoder_val", &right_encoder_val_msg);
+ros::Publisher chatter("mowgli/version", &str_msg);
+ros::Publisher pubBatteryVoltage("mowgli/battery_voltage", &f32_battery_voltage_msg);
+ros::Publisher pubChargeVoltage("mowgli/charge_voltage", &f32_charge_voltage_msg);
+ros::Publisher pubChargePWM("mowgli/charge_pwm", &int16_charge_pwm_msg);
+ros::Publisher pubChargeingState("mowgli/charging_state", &bool_charging_state_msg);
+ros::Publisher pubBladeState("mowgli/blade_state", &bool_blade_state_msg);
+ros::Publisher pubOdom("mowgli/odom", &odom_msg);
+ros::Publisher pubLeftEncoderVal("mowgli/left_encoder_val", &left_encoder_val_msg);
+ros::Publisher pubRightEncoderVal("mowgli/right_encoder_val", &right_encoder_val_msg);
 
 /*
  * SUBSCRIBERS
@@ -121,9 +121,9 @@ extern "C" void CommandVelocityMessageCb(const geometry_msgs::Twist& msg);
 extern "C" void CommandBladeOnMessageCb(const std_msgs::Bool& msg);
 extern "C" void CommandBladeOffMessageCb(const std_msgs::Bool& msg);
 
-ros::Subscriber<geometry_msgs::Twist> subCommandVelocity("cmd_vel", CommandVelocityMessageCb);
-ros::Subscriber<std_msgs::Bool> subBladeOn("cmd_blade_on", CommandBladeOnMessageCb);
-ros::Subscriber<std_msgs::Bool> subBladeOff("cmd_blade_off", CommandBladeOffMessageCb);
+ros::Subscriber<geometry_msgs::Twist> subCommandVelocity("mowgli/cmd_vel", CommandVelocityMessageCb);
+ros::Subscriber<std_msgs::Bool> subBladeOn("mowgli/cmd_blade_on", CommandBladeOnMessageCb);
+ros::Subscriber<std_msgs::Bool> subBladeOff("mowgli/cmd_blade_off", CommandBladeOffMessageCb);
 // TODO ros::Subscriber<std_msgs::Bool> subLEDSet("cmd_panel_led_set", CommandLEDSetMessageCb);
 // TODO ros::Subscriber<std_msgs::Bool> subLEDFlashSlow("cmd_panel_led_flash_slow", CommandLEDFlashSlowMessageCb);
 // TODO ros::Subscriber<std_msgs::Bool> subLEDFlashFast("cmd_panel_led_flash_fast", CommandLEDFlashFastMessageCb);
@@ -260,9 +260,9 @@ extern "C" void motors_handler()
 		setDriveMotors(left_speed, right_speed, left_dir, right_dir);		
 		setBladeMotor(blade_on_off);		
 
-		char setmotorsok[] = "Motors Set";
-		str_msg.data = setmotorsok;
-		chatter.publish(&str_msg);
+		// char setmotorsok[] = "Motors Set";
+		// str_msg.data = setmotorsok;
+		// chatter.publish(&str_msg);
 	
 	  }
 }
