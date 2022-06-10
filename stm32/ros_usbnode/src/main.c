@@ -37,6 +37,7 @@ static int32_t platform_read(void *handle, uint8_t reg, uint8_t *bufp,
 
 static nbt_t main_chargecontroller_nbt;
 static nbt_t main_statusled_nbt;
+static nbt_t throttle_motor_callback;
 
 enum rx_status_enum { RX_WAIT, RX_VALID, RX_CRC_ERROR};
 
@@ -175,7 +176,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
                drivemotors_rx_buf_idx++;               
                if (drivemotors_rx_buf_crc == drivemotors_rcvd_data)
                {                   
-                //debug_printf("HAL_UART_RxCpltCallback - DRIVEMOTORS_USART_INSTANCE - RX_VALID\r\n");
+                    if (NBT_handler(&throttle_motor_callback))
+                    {            
+                        debug_printf("HAL_UART_RxCpltCallback - DRIVEMOTORS_USART_INSTANCE - RX_VALID\r\n");
+                        msgPrint(drivemotors_rx_buf, drivemotors_rx_buf_idx);             
+                    }        
+                   
                    // message valid, reader must set back STATUS to RX_WAIT
                    drivemotors_rx_STATUS = RX_VALID;
                    //drivemotors_rx_buf_idx = 0;
@@ -280,6 +286,7 @@ int main(void)
     // Initialize Main Timers
 	NBT_init(&main_chargecontroller_nbt, 10);
     NBT_init(&main_statusled_nbt, 1000);
+    NBT_init(&throttle_motor_callback, 1000);
     debug_printf(" * NBT Main timers initialized\r\n");     
 
     // Initialize ROS
@@ -321,7 +328,8 @@ int main(void)
             right_encoder_val = (drivemotors_rx_buf[14]<<8)+drivemotors_rx_buf[13];            
             if (drivemotors_rx_buf[5]>>4)       // stuff is moving
             {
-             msgPrint(drivemotors_rx_buf, drivemotors_rx_buf_idx);             
+                debug_printf("Stuff is moving\r\n");
+                msgPrint(drivemotors_rx_buf, drivemotors_rx_buf_idx);             
             }                    
             drivemotors_rx_buf_idx = 0;
             drivemotors_rx_STATUS = RX_WAIT;                    // ready for next message            
