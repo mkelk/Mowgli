@@ -99,6 +99,7 @@ std_msgs::Bool bool_charging_state_msg;
 nav_msgs::Odometry odom_msg;
 std_msgs::UInt16 left_encoder_val_msg;
 std_msgs::UInt16 right_encoder_val_msg;
+std_msgs::Float32 tot_speed_val_msg;
 
 
 /*
@@ -113,6 +114,7 @@ ros::Publisher chatter("mowgli/version", &str_msg);
 // ros::Publisher pubOdom("mowgli/odom", &odom_msg);
 ros::Publisher pubLeftEncoderVal("mowgli/left_encoder_val", &left_encoder_val_msg);
 ros::Publisher pubRightEncoderVal("mowgli/right_encoder_val", &right_encoder_val_msg);
+ros::Publisher pubTotSpeedVal("mowgli/tot_speed_val", &tot_speed_val_msg);
 
 /*
  * SUBSCRIBERS
@@ -282,38 +284,38 @@ extern "C" void broadcast_handler()
 {
 	  if (NBT_handler(&broadcast_nbt))
 	  {		
+			// z = BROADCAST_NBT_TIME_MS/1000;
+			// x = right_wheel_speed_val;
+			// y = left_wheel_speed_val;
+			current_time = nh.now();
+			//////////////////////////////////////////////////
+			// TF message
+			//////////////////////////////////////////////////
+			speed_act_left = left_wheel_speed_val/PWM_PER_MPS;			// wheel speed in m/s
+			speed_act_right = right_wheel_speed_val/PWM_PER_MPS;			// wheel speed in m/s
+		//	debug_printf("speed_act_left: %f speed_act_right: %f\r\n",  speed_act_left, speed_act_right);		
+			dt = (BROADCAST_NBT_TIME_MS/1000.0);
+			dxy = (speed_act_left+speed_act_right)*dt/2.0;
+			dth = ((speed_act_right-speed_act_left)*dt)/WHEEL_BASE;
+
+		//	debug_printf("dt: %f dxy: %f dth: %f\r\n",  dt, dxy, dth);		
+
+			if (dth > 0) dth *= angular_scale_positive;
+			if (dth < 0) dth *= angular_scale_negative;
+			if (dxy > 0) dxy *= linear_scale_positive;
+			if (dxy < 0) dxy *= linear_scale_negative;
+
+			dx = cos(dth) * dxy;
+			dy = sin(dth) * dxy;
+
+			x_pos += (cos(theta) * dx - sin(theta) * dy);
+			y_pos += (sin(theta) * dx + cos(theta) * dy);
+			theta += dth;
+
+			if(theta >= two_pi) theta -= two_pi;
+			if(theta <= -two_pi) theta += two_pi;
+
 		  if (false) {
-						// z = BROADCAST_NBT_TIME_MS/1000;
-						// x = right_wheel_speed_val;
-						// y = left_wheel_speed_val;
-						current_time = nh.now();
-						//////////////////////////////////////////////////
-						// TF message
-						//////////////////////////////////////////////////
-						speed_act_left = left_wheel_speed_val/PWM_PER_MPS;			// wheel speed in m/s
-						speed_act_right = right_wheel_speed_val/PWM_PER_MPS;			// wheel speed in m/s
-					//	debug_printf("speed_act_left: %f speed_act_right: %f\r\n",  speed_act_left, speed_act_right);		
-						dt = (BROADCAST_NBT_TIME_MS/1000.0);
-						dxy = (speed_act_left+speed_act_right)*dt/2.0;
-						dth = ((speed_act_right-speed_act_left)*dt)/WHEEL_BASE;
-
-					//	debug_printf("dt: %f dxy: %f dth: %f\r\n",  dt, dxy, dth);		
-
-						if (dth > 0) dth *= angular_scale_positive;
-						if (dth < 0) dth *= angular_scale_negative;
-						if (dxy > 0) dxy *= linear_scale_positive;
-						if (dxy < 0) dxy *= linear_scale_negative;
-
-						dx = cos(dth) * dxy;
-						dy = sin(dth) * dxy;
-
-						x_pos += (cos(theta) * dx - sin(theta) * dy);
-						y_pos += (sin(theta) * dx + cos(theta) * dy);
-						theta += dth;
-
-						if(theta >= two_pi) theta -= two_pi;
-						if(theta <= -two_pi) theta += two_pi;
-
 						quat = tf::createQuaternionFromYaw(theta);
 						if(publish_tf) {
 							geometry_msgs::TransformStamped t;						
@@ -379,6 +381,9 @@ extern "C" void broadcast_handler()
 		pubLeftEncoderVal.publish(&left_encoder_val_msg);
 		right_encoder_val_msg.data = right_encoder_val;
 		pubRightEncoderVal.publish(&right_encoder_val_msg);
+		double totSpeed = -0.5 * (speed_act_left + speed_act_right);
+		tot_speed_val_msg.data = totSpeed;
+		pubTotSpeedVal.publish(&tot_speed_val_msg);
 /*
 		double dx = 0.2;
 		double dtheta = 0.18;
@@ -434,6 +439,7 @@ extern "C" void init_ROS()
 	// nh.advertise(pubChargeingState);
 	nh.advertise(pubLeftEncoderVal);
 	nh.advertise(pubRightEncoderVal);
+	nh.advertise(pubTotSpeedVal);
 	// Initialize Subs
 	nh.subscribe(subCommandVelocity);
 	// nh.subscribe(subBladeOn);
