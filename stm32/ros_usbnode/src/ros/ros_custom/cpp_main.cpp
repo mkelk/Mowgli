@@ -105,12 +105,12 @@ std_msgs::UInt16 right_encoder_val_msg;
  * PUBLISHERS
  */
 ros::Publisher chatter("mowgli/version", &str_msg);
-ros::Publisher pubBatteryVoltage("mowgli/battery_voltage", &f32_battery_voltage_msg);
-ros::Publisher pubChargeVoltage("mowgli/charge_voltage", &f32_charge_voltage_msg);
-ros::Publisher pubChargePWM("mowgli/charge_pwm", &int16_charge_pwm_msg);
-ros::Publisher pubChargeingState("mowgli/charging_state", &bool_charging_state_msg);
-ros::Publisher pubBladeState("mowgli/blade_state", &bool_blade_state_msg);
-ros::Publisher pubOdom("mowgli/odom", &odom_msg);
+// ros::Publisher pubBatteryVoltage("mowgli/battery_voltage", &f32_battery_voltage_msg);
+// ros::Publisher pubChargeVoltage("mowgli/charge_voltage", &f32_charge_voltage_msg);
+// ros::Publisher pubChargePWM("mowgli/charge_pwm", &int16_charge_pwm_msg);
+// ros::Publisher pubChargeingState("mowgli/charging_state", &bool_charging_state_msg);
+// ros::Publisher pubBladeState("mowgli/blade_state", &bool_blade_state_msg);
+// ros::Publisher pubOdom("mowgli/odom", &odom_msg);
 ros::Publisher pubLeftEncoderVal("mowgli/left_encoder_val", &left_encoder_val_msg);
 ros::Publisher pubRightEncoderVal("mowgli/right_encoder_val", &right_encoder_val_msg);
 
@@ -174,8 +174,8 @@ extern "C" void CommandVelocityMessageCb(const geometry_msgs::Twist& msg)
 		//	debug_printf("x: %f  z: %f\r\n", msg.linear.x, msg.angular.z);
 
 		// calculate twist speeds to add/substract 
-		float left_twist_mps = -1.0 * msg.angular.z * WHEEL_BASE / WHEEL_DIAMETER / 10;
-		float right_twist_mps = msg.angular.z * WHEEL_BASE / WHEEL_DIAMETER / 10;
+		float left_twist_mps = msg.angular.z / 3.1416 * WHEEL_BASE;
+		float right_twist_mps = -1.0 * msg.angular.z / 3.1416 * WHEEL_BASE;
     
 
 		// add them to the linear speed 
@@ -232,16 +232,16 @@ extern "C" void chatter_handler()
 		  */
 		  
 		  f32_battery_voltage_msg.data = ADC_BatteryVoltage();
-		  pubBatteryVoltage.publish(&f32_battery_voltage_msg);
+		  // pubBatteryVoltage.publish(&f32_battery_voltage_msg);
 
 		  f32_charge_voltage_msg.data = ADC_ChargeVoltage();
-		  pubChargeVoltage.publish(&f32_charge_voltage_msg);
+		  // pubChargeVoltage.publish(&f32_charge_voltage_msg);
 
 		  int16_charge_pwm_msg.data = chargecontrol_pwm_val;
-		  pubChargePWM.publish(&int16_charge_pwm_msg);
+		  // pubChargePWM.publish(&int16_charge_pwm_msg);
 
 		  bool_charging_state_msg.data =  chargecontrol_is_charging;
-		  pubChargeingState.publish(&bool_charging_state_msg);
+		  // pubChargeingState.publish(&bool_charging_state_msg);
  		  //bool_blade_state_msg.data = true; // TODO: read blade status
 //		  pubBladeState.publish(&bool_blade_state_msg);
 
@@ -282,98 +282,99 @@ extern "C" void broadcast_handler()
 {
 	  if (NBT_handler(&broadcast_nbt))
 	  {		
-		// z = BROADCAST_NBT_TIME_MS/1000;
-		// x = right_wheel_speed_val;
-		// y = left_wheel_speed_val;
-		current_time = nh.now();
-		//////////////////////////////////////////////////
-		// TF message
-		//////////////////////////////////////////////////
-		speed_act_left = left_wheel_speed_val/PWM_PER_MPS;			// wheel speed in m/s
-		speed_act_right = right_wheel_speed_val/PWM_PER_MPS;			// wheel speed in m/s
-	//	debug_printf("speed_act_left: %f speed_act_right: %f\r\n",  speed_act_left, speed_act_right);		
-		dt = (BROADCAST_NBT_TIME_MS/1000.0);
-		dxy = (speed_act_left+speed_act_right)*dt/2.0;
-		dth = ((speed_act_right-speed_act_left)*dt)/WHEEL_BASE;
+		  if (false) {
+						// z = BROADCAST_NBT_TIME_MS/1000;
+						// x = right_wheel_speed_val;
+						// y = left_wheel_speed_val;
+						current_time = nh.now();
+						//////////////////////////////////////////////////
+						// TF message
+						//////////////////////////////////////////////////
+						speed_act_left = left_wheel_speed_val/PWM_PER_MPS;			// wheel speed in m/s
+						speed_act_right = right_wheel_speed_val/PWM_PER_MPS;			// wheel speed in m/s
+					//	debug_printf("speed_act_left: %f speed_act_right: %f\r\n",  speed_act_left, speed_act_right);		
+						dt = (BROADCAST_NBT_TIME_MS/1000.0);
+						dxy = (speed_act_left+speed_act_right)*dt/2.0;
+						dth = ((speed_act_right-speed_act_left)*dt)/WHEEL_BASE;
 
-	//	debug_printf("dt: %f dxy: %f dth: %f\r\n",  dt, dxy, dth);		
+					//	debug_printf("dt: %f dxy: %f dth: %f\r\n",  dt, dxy, dth);		
 
-		if (dth > 0) dth *= angular_scale_positive;
-    	if (dth < 0) dth *= angular_scale_negative;
-    	if (dxy > 0) dxy *= linear_scale_positive;
-    	if (dxy < 0) dxy *= linear_scale_negative;
+						if (dth > 0) dth *= angular_scale_positive;
+						if (dth < 0) dth *= angular_scale_negative;
+						if (dxy > 0) dxy *= linear_scale_positive;
+						if (dxy < 0) dxy *= linear_scale_negative;
 
-    	dx = cos(dth) * dxy;
-    	dy = sin(dth) * dxy;
+						dx = cos(dth) * dxy;
+						dy = sin(dth) * dxy;
 
-    	x_pos += (cos(theta) * dx - sin(theta) * dy);
-    	y_pos += (sin(theta) * dx + cos(theta) * dy);
-    	theta += dth;
+						x_pos += (cos(theta) * dx - sin(theta) * dy);
+						y_pos += (sin(theta) * dx + cos(theta) * dy);
+						theta += dth;
 
-    	if(theta >= two_pi) theta -= two_pi;
-    	if(theta <= -two_pi) theta += two_pi;
+						if(theta >= two_pi) theta -= two_pi;
+						if(theta <= -two_pi) theta += two_pi;
 
-		quat = tf::createQuaternionFromYaw(theta);
-		if(publish_tf) {
-			geometry_msgs::TransformStamped t;						
-			t.header.frame_id = odom;
-			t.child_frame_id = base_link;
-			t.transform.translation.x = x_pos;
-			t.transform.translation.y = y_pos;
-			t.transform.translation.z = 0.0;
-			t.transform.rotation = quat;
-			t.header.stamp = current_time;					
-			broadcaster.sendTransform(t);			
-		}
-		//////////////////////////////////////////////////
-		// odom message
-		//////////////////////////////////////////////////
-		odom_msg.header.stamp = current_time;
-		odom_msg.header.frame_id = odom;
-		odom_msg.pose.pose.position.x = x_pos;
-		odom_msg.pose.pose.position.y = y_pos;
-		odom_msg.pose.pose.position.z = 0.0;
-		odom_msg.pose.pose.orientation = quat;
-		if (speed_act_left == 0 && speed_act_right == 0){
-			odom_msg.pose.covariance[0] = 1e-9;
-			odom_msg.pose.covariance[7] = 1e-3;
-			odom_msg.pose.covariance[8] = 1e-9;
-			odom_msg.pose.covariance[14] = 1e6;
-			odom_msg.pose.covariance[21] = 1e6;
-			odom_msg.pose.covariance[28] = 1e6;
-			odom_msg.pose.covariance[35] = 1e-9;
-			odom_msg.twist.covariance[0] = 1e-9;
-			odom_msg.twist.covariance[7] = 1e-3;
-			odom_msg.twist.covariance[8] = 1e-9;
-			odom_msg.twist.covariance[14] = 1e6;
-			odom_msg.twist.covariance[21] = 1e6;
-			odom_msg.twist.covariance[28] = 1e6;
-			odom_msg.twist.covariance[35] = 1e-9;
-		}
-		else{
-			odom_msg.pose.covariance[0] = 1e-3;
-			odom_msg.pose.covariance[7] = 1e-3;
-			odom_msg.pose.covariance[8] = 0.0;
-			odom_msg.pose.covariance[14] = 1e6;
-			odom_msg.pose.covariance[21] = 1e6;
-			odom_msg.pose.covariance[28] = 1e6;
-			odom_msg.pose.covariance[35] = 1e3;
-			odom_msg.twist.covariance[0] = 1e-3;
-			odom_msg.twist.covariance[7] = 1e-3;
-			odom_msg.twist.covariance[8] = 0.0;
-			odom_msg.twist.covariance[14] = 1e6;
-			odom_msg.twist.covariance[21] = 1e6;
-			odom_msg.twist.covariance[28] = 1e6;
-			odom_msg.twist.covariance[35] = 1e3;
-		}
-		vx = (dt == 0)?  0 : (speed_act_left+speed_act_right)/2.0;
-	//	vth = (dt == 0)? 0 : (speed_act_right-speed_act_left)/WHEEL_BASE;
-		odom_msg.child_frame_id = base_link;
-		odom_msg.twist.twist.linear.x = vx;
-		odom_msg.twist.twist.linear.y = 0.0;
-		odom_msg.twist.twist.angular.z = dth;
-		pubOdom.publish(&odom_msg);
-
+						quat = tf::createQuaternionFromYaw(theta);
+						if(publish_tf) {
+							geometry_msgs::TransformStamped t;						
+							t.header.frame_id = odom;
+							t.child_frame_id = base_link;
+							t.transform.translation.x = x_pos;
+							t.transform.translation.y = y_pos;
+							t.transform.translation.z = 0.0;
+							t.transform.rotation = quat;
+							t.header.stamp = current_time;					
+							broadcaster.sendTransform(t);			
+						}
+						//////////////////////////////////////////////////
+						// odom message
+						//////////////////////////////////////////////////
+						odom_msg.header.stamp = current_time;
+						odom_msg.header.frame_id = odom;
+						odom_msg.pose.pose.position.x = x_pos;
+						odom_msg.pose.pose.position.y = y_pos;
+						odom_msg.pose.pose.position.z = 0.0;
+						odom_msg.pose.pose.orientation = quat;
+						if (speed_act_left == 0 && speed_act_right == 0){
+							odom_msg.pose.covariance[0] = 1e-9;
+							odom_msg.pose.covariance[7] = 1e-3;
+							odom_msg.pose.covariance[8] = 1e-9;
+							odom_msg.pose.covariance[14] = 1e6;
+							odom_msg.pose.covariance[21] = 1e6;
+							odom_msg.pose.covariance[28] = 1e6;
+							odom_msg.pose.covariance[35] = 1e-9;
+							odom_msg.twist.covariance[0] = 1e-9;
+							odom_msg.twist.covariance[7] = 1e-3;
+							odom_msg.twist.covariance[8] = 1e-9;
+							odom_msg.twist.covariance[14] = 1e6;
+							odom_msg.twist.covariance[21] = 1e6;
+							odom_msg.twist.covariance[28] = 1e6;
+							odom_msg.twist.covariance[35] = 1e-9;
+						}
+						else{
+							odom_msg.pose.covariance[0] = 1e-3;
+							odom_msg.pose.covariance[7] = 1e-3;
+							odom_msg.pose.covariance[8] = 0.0;
+							odom_msg.pose.covariance[14] = 1e6;
+							odom_msg.pose.covariance[21] = 1e6;
+							odom_msg.pose.covariance[28] = 1e6;
+							odom_msg.pose.covariance[35] = 1e3;
+							odom_msg.twist.covariance[0] = 1e-3;
+							odom_msg.twist.covariance[7] = 1e-3;
+							odom_msg.twist.covariance[8] = 0.0;
+							odom_msg.twist.covariance[14] = 1e6;
+							odom_msg.twist.covariance[21] = 1e6;
+							odom_msg.twist.covariance[28] = 1e6;
+							odom_msg.twist.covariance[35] = 1e3;
+						}
+						vx = (dt == 0)?  0 : (speed_act_left+speed_act_right)/2.0;
+					//	vth = (dt == 0)? 0 : (speed_act_right-speed_act_left)/WHEEL_BASE;
+						odom_msg.child_frame_id = base_link;
+						odom_msg.twist.twist.linear.x = vx;
+						odom_msg.twist.twist.linear.y = 0.0;
+						odom_msg.twist.twist.angular.z = dth;
+						// pubOdom.publish(&odom_msg);
+		  }
 		left_encoder_val_msg.data = left_encoder_val;
 		pubLeftEncoderVal.publish(&left_encoder_val_msg);
 		right_encoder_val_msg.data = right_encoder_val;
@@ -421,22 +422,22 @@ extern "C" void init_ROS()
 	nh.initNode();
 
 	// Initialize TF Broadcaster
-	broadcaster.init(nh);
+	// broadcaster.init(nh);
 
 	// Initialize Pubs
 	nh.advertise(chatter);
-	nh.advertise(pubBatteryVoltage);
-	nh.advertise(pubChargeVoltage);
-	nh.advertise(pubChargePWM);
-	nh.advertise(pubOdom);
-	nh.advertise(pubBladeState);
-	nh.advertise(pubChargeingState);
+	// nh.advertise(pubBatteryVoltage);
+	// nh.advertise(pubChargeVoltage);
+	// nh.advertise(pubChargePWM);
+	// nh.advertise(pubOdom);
+	// nh.advertise(pubBladeState);
+	// nh.advertise(pubChargeingState);
 	nh.advertise(pubLeftEncoderVal);
 	nh.advertise(pubRightEncoderVal);
 	// Initialize Subs
 	nh.subscribe(subCommandVelocity);
-	nh.subscribe(subBladeOn);
-	nh.subscribe(subBladeOff);
+	// nh.subscribe(subBladeOn);
+	// nh.subscribe(subBladeOff);
 
 	// Initialize Timers
 	NBT_init(&publish_nbt, 1000);

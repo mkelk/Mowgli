@@ -145,6 +145,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
          /*
             * DRIVE MOTORS Message handling
             */
+            //debug_printf("HAL_UART_RxCpltCallback - DRIVEMOTORS_USART_INSTANCE\r\n");
            if (drivemotors_rx_buf_idx == 0 && drivemotors_rcvd_data == 0x55)           /* PREAMBLE */  
            {                                   
                drivemotors_rx_buf_crc = drivemotors_rcvd_data;        
@@ -174,6 +175,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
                drivemotors_rx_buf_idx++;               
                if (drivemotors_rx_buf_crc == drivemotors_rcvd_data)
                {                   
+                //debug_printf("HAL_UART_RxCpltCallback - DRIVEMOTORS_USART_INSTANCE - RX_VALID\r\n");
                    // message valid, reader must set back STATUS to RX_WAIT
                    drivemotors_rx_STATUS = RX_VALID;
                    //drivemotors_rx_buf_idx = 0;
@@ -292,6 +294,9 @@ int main(void)
         spinOnce();                       
         if (drivemotors_rx_STATUS == RX_VALID)                    // valid frame received from DRIVEMOTORS USART
         {
+            // debug_printf("Handling valid drivemotors\r\n");     
+            //  msgPrint(drivemotors_rx_buf, drivemotors_rx_buf_idx);             
+
             uint8_t direction = drivemotors_rx_buf[5];
 
             // we need to adjust for direction (+/-) !
@@ -314,10 +319,10 @@ int main(void)
                         
             left_encoder_val = (drivemotors_rx_buf[16]<<8)+drivemotors_rx_buf[15];
             right_encoder_val = (drivemotors_rx_buf[14]<<8)+drivemotors_rx_buf[13];            
-            //if (drivemotors_rx_buf[5]>>4)       // stuff is moving
-            //{
-            //  msgPrint(drivemotors_rx_buf, drivemotors_rx_buf_idx);             
-            //}                    
+            if (drivemotors_rx_buf[5]>>4)       // stuff is moving
+            {
+             msgPrint(drivemotors_rx_buf, drivemotors_rx_buf_idx);             
+            }                    
             drivemotors_rx_buf_idx = 0;
             drivemotors_rx_STATUS = RX_WAIT;                    // ready for next message            
             //  HAL_GPIO_TogglePin(LED_GPIO_PORT, LED_PIN);         // flash LED             
@@ -1102,7 +1107,7 @@ void setDriveMotors(uint8_t left_speed, uint8_t right_speed, uint8_t left_dir, u
     uint8_t drivemotors_msg[DRIVEMOTORS_MSG_LEN] =  { 0x55, 0xaa, 0x8, 0x10, 0x80, direction, right_speed, left_speed, 0x0, 0x0, 0x0};
     
     // calc direction bits
-    if (left_dir == 0)
+    if (left_dir == 1)
     {
         direction |= (0x20 + 0x10);
     }
@@ -1110,7 +1115,7 @@ void setDriveMotors(uint8_t left_speed, uint8_t right_speed, uint8_t left_dir, u
     {
         direction |= 0x20;
     }
-    if (right_dir == 0)
+    if (right_dir == 1)
     {
         direction |= (0x40 + 0x80);        
     }
