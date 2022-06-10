@@ -26,6 +26,7 @@
 #include "geometry_msgs/Twist.h"
 
 
+
 #define MAX_MPS	  	0.6		 	// Allow maximum speed of 0.6 m/s 
 #define PWM_PER_MPS 300.0		// PWM value of 300 means 1 m/s bot speed
 
@@ -52,8 +53,8 @@ ros::NodeHandle nh;
 geometry_msgs::Quaternion quat;
 geometry_msgs::TransformStamped t;
 tf::TransformBroadcaster broadcaster;
-char base_link[] = "/base_link";
-char odom[] = "/odom";
+char base_link[] = "base_link";
+char odom[] = "odom";
 
 //double radius = 0.04;                              //Wheel radius, in m
 //double wheelbase = 0.187;                          //Wheelbase, in m
@@ -74,7 +75,7 @@ double linear_scale_positive = 1.0;
 double linear_scale_negative = 1.0;
 double angular_scale_positive = 1.0;
 double angular_scale_negative = 1.0;
-bool publish_tf = true;
+bool publish_tf = true; // publish odom -> base_link transform
 double dt = 0.0;
 double dx = 0.0;
 double dy = 0.0;
@@ -115,6 +116,7 @@ ros::Publisher chatter("mowgli/version", &str_msg);
 ros::Publisher pubLeftEncoderVal("mowgli/left_encoder_val", &left_encoder_val_msg);
 ros::Publisher pubRightEncoderVal("mowgli/right_encoder_val", &right_encoder_val_msg);
 ros::Publisher pubTotSpeedVal("mowgli/tot_speed_val", &tot_speed_val_msg);
+
 
 /*
  * SUBSCRIBERS
@@ -402,6 +404,8 @@ extern "C" void broadcast_handler()
 		
 		broadcaster.sendTransform(t);		
 */		
+
+
 	  }
 }
 
@@ -440,6 +444,7 @@ extern "C" void init_ROS()
 	nh.advertise(pubLeftEncoderVal);
 	nh.advertise(pubRightEncoderVal);
 	nh.advertise(pubTotSpeedVal);
+	
 	// Initialize Subs
 	nh.subscribe(subCommandVelocity);
 	// nh.subscribe(subBladeOn);
