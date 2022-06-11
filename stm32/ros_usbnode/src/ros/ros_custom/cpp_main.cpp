@@ -178,8 +178,8 @@ extern "C" void CommandVelocityMessageCb(const geometry_msgs::Twist& msg)
 		//	debug_printf("x: %f  z: %f\r\n", msg.linear.x, msg.angular.z);
 
 		// calculate twist speeds to add/substract 
-		float left_twist_mps = msg.angular.z / 3.1416 * WHEEL_BASE;
-		float right_twist_mps = -1.0 * msg.angular.z / 3.1416 * WHEEL_BASE;
+		float left_twist_mps = -1.0 * msg.angular.z / 3.1416 * WHEEL_BASE;
+		float right_twist_mps = msg.angular.z / 3.1416 * WHEEL_BASE;
     
 
 		// add them to the linear speed 

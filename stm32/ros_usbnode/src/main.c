@@ -408,10 +408,11 @@ int main(void)
                         
             left_encoder_val = (drivemotors_rx_buf[16]<<8)+drivemotors_rx_buf[15];
             right_encoder_val = (drivemotors_rx_buf[14]<<8)+drivemotors_rx_buf[13];            
-            //if (drivemotors_rx_buf[5]>>4)       // stuff is moving
-           // {
-           //    msgPrint(drivemotors_rx_buf, drivemotors_rx_buf_idx);             
-           // }                    
+        //     if (drivemotors_rx_buf[5]>>4)       // stuff is moving
+        //    {
+        //         debug_printf("Stuff is moving\r\n");
+        //         msgPrint(drivemotors_rx_buf, drivemotors_rx_buf_idx);             
+        //    }                    
             drivemotors_rx_buf_idx = 0;
             drivemotors_rx_STATUS = RX_WAIT;                    // ready for next message                        
             HAL_GPIO_TogglePin(LED_GPIO_PORT, LED_PIN);         // flash LED                         
@@ -1280,7 +1281,7 @@ void setDriveMotors(uint8_t left_speed, uint8_t right_speed, uint8_t left_dir, u
     drivemotors_msg[7] = left_speed;
 
     // calc direction bits
-    if (left_dir == 0)
+    if (left_dir != 0)
     {        
         direction |= (0x20 + 0x10);                
     }
@@ -1288,7 +1289,7 @@ void setDriveMotors(uint8_t left_speed, uint8_t right_speed, uint8_t left_dir, u
     {
         direction |= 0x20;
     }
-    if (right_dir == 0)
+    if (right_dir != 0)
     {   
         direction |= (0x40 + 0x80);                             
     }
