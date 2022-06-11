@@ -107,12 +107,12 @@ std_msgs::Float32 tot_speed_val_msg;
  * PUBLISHERS
  */
 ros::Publisher chatter("mowgli/version", &str_msg);
-// ros::Publisher pubBatteryVoltage("mowgli/battery_voltage", &f32_battery_voltage_msg);
-// ros::Publisher pubChargeVoltage("mowgli/charge_voltage", &f32_charge_voltage_msg);
-// ros::Publisher pubChargePWM("mowgli/charge_pwm", &int16_charge_pwm_msg);
-// ros::Publisher pubChargeingState("mowgli/charging_state", &bool_charging_state_msg);
-// ros::Publisher pubBladeState("mowgli/blade_state", &bool_blade_state_msg);
-// ros::Publisher pubOdom("mowgli/odom", &odom_msg);
+ros::Publisher pubBatteryVoltage("mowgli/battery_voltage", &f32_battery_voltage_msg);
+ros::Publisher pubChargeVoltage("mowgli/charge_voltage", &f32_charge_voltage_msg);
+ros::Publisher pubChargePWM("mowgli/charge_pwm", &int16_charge_pwm_msg);
+ros::Publisher pubChargeingState("mowgli/charging_state", &bool_charging_state_msg);
+ros::Publisher pubBladeState("mowgli/blade_state", &bool_blade_state_msg);
+ros::Publisher pubOdom("mowgli/odom", &odom_msg);
 ros::Publisher pubLeftEncoderVal("mowgli/left_encoder_val", &left_encoder_val_msg);
 ros::Publisher pubRightEncoderVal("mowgli/right_encoder_val", &right_encoder_val_msg);
 ros::Publisher pubTotSpeedVal("mowgli/tot_speed_val", &tot_speed_val_msg);
@@ -236,18 +236,18 @@ extern "C" void chatter_handler()
 		  */
 		  
 		  f32_battery_voltage_msg.data = ADC_BatteryVoltage();
-		  // pubBatteryVoltage.publish(&f32_battery_voltage_msg);
+		  pubBatteryVoltage.publish(&f32_battery_voltage_msg);
 
 		  f32_charge_voltage_msg.data = ADC_ChargeVoltage();
-		  // pubChargeVoltage.publish(&f32_charge_voltage_msg);
+		  pubChargeVoltage.publish(&f32_charge_voltage_msg);
 
 		  int16_charge_pwm_msg.data = chargecontrol_pwm_val;
-		  // pubChargePWM.publish(&int16_charge_pwm_msg);
+		  pubChargePWM.publish(&int16_charge_pwm_msg);
 
 		  bool_charging_state_msg.data =  chargecontrol_is_charging;
-		  // pubChargeingState.publish(&bool_charging_state_msg);
- 		  //bool_blade_state_msg.data = true; // TODO: read blade status
-//		  pubBladeState.publish(&bool_blade_state_msg);
+		  pubChargeingState.publish(&bool_charging_state_msg);
+ 		  bool_blade_state_msg.data = true; // TODO: read blade status
+		  pubBladeState.publish(&bool_blade_state_msg);
 
 		  HAL_GPIO_TogglePin(LED_GPIO_PORT, LED_PIN);         // flash LED
 	  }
@@ -435,12 +435,12 @@ extern "C" void init_ROS()
 
 	// Initialize Pubs
 	nh.advertise(chatter);
-	// nh.advertise(pubBatteryVoltage);
-	// nh.advertise(pubChargeVoltage);
-	// nh.advertise(pubChargePWM);
-	// nh.advertise(pubOdom);
-	// nh.advertise(pubBladeState);
-	// nh.advertise(pubChargeingState);
+	nh.advertise(pubBatteryVoltage);
+	nh.advertise(pubChargeVoltage);
+	nh.advertise(pubChargePWM);
+	nh.advertise(pubOdom);
+	nh.advertise(pubBladeState);
+	nh.advertise(pubChargeingState);
 	nh.advertise(pubLeftEncoderVal);
 	nh.advertise(pubRightEncoderVal);
 	nh.advertise(pubTotSpeedVal);
