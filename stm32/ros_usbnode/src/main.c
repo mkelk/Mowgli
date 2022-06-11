@@ -226,8 +226,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
                {                   
                     if (NBT_handler(&throttle_motor_callback))
                     {            
-                        debug_printf("HAL_UART_RxCpltCallback - DRIVEMOTORS_USART_INSTANCE - RX_VALID\r\n");
-                        msgPrint(drivemotors_rx_buf, drivemotors_rx_buf_idx);             
+                        // debug_printf("HAL_UART_RxCpltCallback - DRIVEMOTORS_USART_INSTANCE - RX_VALID\r\n");
+                        // msgPrint(drivemotors_rx_buf, drivemotors_rx_buf_idx);             
                     }        
                    
                    // message valid, reader must set back STATUS to RX_WAIT
