@@ -391,23 +391,23 @@ int main(void)
             // we need to adjust for direction (+/-) !
             if ((direction & 0x30) == 0x30)
             {            
-                left_wheel_speed_val =  drivemotors_rx_buf[7];
+                right_wheel_speed_val =  drivemotors_rx_buf[7];
             }
             else 
             {
-                left_wheel_speed_val =  -1 * drivemotors_rx_buf[7];
+                right_wheel_speed_val =  -1 * drivemotors_rx_buf[7];
             }
             if ( (direction & 0xc0) == 0xc0)
             {            
-                right_wheel_speed_val =  drivemotors_rx_buf[6];
+                left_wheel_speed_val =  drivemotors_rx_buf[6];
             }
             else 
             {
-                right_wheel_speed_val = -1 * drivemotors_rx_buf[6];
+                left_wheel_speed_val = -1 * drivemotors_rx_buf[6];
             }
                         
-            left_encoder_val = (drivemotors_rx_buf[16]<<8)+drivemotors_rx_buf[15];
-            right_encoder_val = (drivemotors_rx_buf[14]<<8)+drivemotors_rx_buf[13];            
+            right_encoder_val = (drivemotors_rx_buf[16]<<8)+drivemotors_rx_buf[15];
+            left_encoder_val = (drivemotors_rx_buf[14]<<8)+drivemotors_rx_buf[13];            
         //     if (drivemotors_rx_buf[5]>>4)       // stuff is moving
         //    {
         //         debug_printf("Stuff is moving\r\n");

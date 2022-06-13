@@ -100,7 +100,8 @@ std_msgs::Bool bool_charging_state_msg;
 nav_msgs::Odometry odom_msg;
 std_msgs::UInt16 left_encoder_val_msg;
 std_msgs::UInt16 right_encoder_val_msg;
-std_msgs::Float32 tot_speed_val_msg;
+std_msgs::Float32 left_speed_val_msg;
+std_msgs::Float32 right_speed_val_msg;
 
 
 /*
@@ -115,7 +116,8 @@ ros::Publisher pubBladeState("mowgli/blade_state", &bool_blade_state_msg);
 ros::Publisher pubOdom("mowgli/odom", &odom_msg);
 ros::Publisher pubLeftEncoderVal("mowgli/left_encoder_val", &left_encoder_val_msg);
 ros::Publisher pubRightEncoderVal("mowgli/right_encoder_val", &right_encoder_val_msg);
-ros::Publisher pubTotSpeedVal("mowgli/tot_speed_val", &tot_speed_val_msg);
+ros::Publisher pubLeftSpeedVal("mowgli/left_speed_val", &left_speed_val_msg);
+ros::Publisher pubRightSpeedVal("mowgli/right_speed_val", &right_speed_val_msg);
 
 
 /*
@@ -178,8 +180,8 @@ extern "C" void CommandVelocityMessageCb(const geometry_msgs::Twist& msg)
 		//	debug_printf("x: %f  z: %f\r\n", msg.linear.x, msg.angular.z);
 
 		// calculate twist speeds to add/substract 
-		float left_twist_mps = -1.0 * msg.angular.z / 3.1416 * WHEEL_BASE;
-		float right_twist_mps = msg.angular.z / 3.1416 * WHEEL_BASE;
+		float left_twist_mps = msg.angular.z / 3.1416 * WHEEL_BASE;
+		float right_twist_mps = -1.0 * msg.angular.z / 3.1416 * WHEEL_BASE;
     
 
 		// add them to the linear speed 
@@ -379,13 +381,16 @@ extern "C" void broadcast_handler()
 						odom_msg.twist.twist.angular.z = dth;
 						// pubOdom.publish(&odom_msg);
 		  }
+		left_speed_val_msg.data = left_wheel_speed_val;
+		pubLeftSpeedVal.publish(&left_speed_val_msg);
+		right_speed_val_msg.data = right_wheel_speed_val;
+		pubRightSpeedVal.publish(&right_speed_val_msg);
+
 		left_encoder_val_msg.data = left_encoder_val;
 		pubLeftEncoderVal.publish(&left_encoder_val_msg);
 		right_encoder_val_msg.data = right_encoder_val;
 		pubRightEncoderVal.publish(&right_encoder_val_msg);
-		double totSpeed = -0.5 * (speed_act_left + speed_act_right);
-		tot_speed_val_msg.data = totSpeed;
-		pubTotSpeedVal.publish(&tot_speed_val_msg);
+
 /*
 		double dx = 0.2;
 		double dtheta = 0.18;
@@ -443,7 +448,8 @@ extern "C" void init_ROS()
 	nh.advertise(pubChargeingState);
 	nh.advertise(pubLeftEncoderVal);
 	nh.advertise(pubRightEncoderVal);
-	nh.advertise(pubTotSpeedVal);
+	nh.advertise(pubLeftSpeedVal);
+	nh.advertise(pubRightSpeedVal);
 	
 	// Initialize Subs
 	nh.subscribe(subCommandVelocity);
